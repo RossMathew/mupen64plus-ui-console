@@ -29,7 +29,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdarg.h>
-
 #include "SDL_main.h"
 
 #include "cheat.h"
@@ -39,6 +38,8 @@
 #include "core_interface.h"
 #include "compare_core.h"
 #include "osal_preproc.h"
+
+
 
 /* Version number for UI-Console config section parameters */
 #define CONFIG_PARAM_VERSION     1.00
@@ -276,6 +277,9 @@ static void printUsage(const char *progname)
            "    --core-compare-send    : use the Core Comparison debugging feature, in data sending mode\n"
            "    --core-compare-recv    : use the Core Comparison debugging feature, in data receiving mode\n"
            "    --nosaveoptions        : do not save the given command-line options in configuration file\n"
+		   "    --server               : launch the emulator as network server\n"
+		   "    --client (ip)          : launch the emulator as network client and connect to the ip\n"
+		   "    --port (port number)   : server: open the port number | client: connect to the port number\n"
            "    --verbose              : print lots of information\n"
            "    --help                 : see this help message\n\n"
            "(plugin-spec):\n"
@@ -500,6 +504,26 @@ static m64p_error ParseCommandLineFinal(int argc, const char **argv)
                 (*ConfigSetParameter)(l_ConfigVideo, "ScreenHeight", M64TYPE_INT, &yres);
             }
         }
+		else if (strcmp(argv[i], "--server") == 0)
+		{
+			int isServer = IS_SERVER;
+			(*ConfigSetParameter)(l_ConfigCore, "NetworkMode", M64TYPE_INT, &isServer);
+		}
+		else if (strcmp(argv[i], "--client") == 0 && ArgsLeft >= 1)
+		{
+			const char *ip = argv[i + 1];
+			int isClient = IS_CLIENT;
+			i++;
+			(*ConfigSetParameter)(l_ConfigCore, "NetworkMode", M64TYPE_INT, &isClient);
+			(*ConfigSetParameter)(l_ConfigCore, "ServerIp", M64TYPE_STRING, ip);
+		}
+		else if (strcmp(argv[i], "--port") == 0 && ArgsLeft >= 1)
+		{
+			const char *port = argv[i + 1];
+			//port is a string because getaddrinfo need a char* 
+			(*ConfigSetParameter)(l_ConfigCore, "ServerPort", M64TYPE_INT, port);
+			i++;
+		}
         else if (strcmp(argv[i], "--cheats") == 0 && ArgsLeft >= 1)
         {
             if (strcmp(argv[i+1], "all") == 0)

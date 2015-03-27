@@ -22,9 +22,9 @@
  * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 
 /* This is the main application entry point for the console-only front-end
- * for Mupen64Plus v2.0. 
+ * for Mupen64Plus v2.0.
  */
- 
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -58,9 +58,9 @@ static const char *l_ROMFilepath = NULL;       // filepath of ROM to load & run 
 static const char *l_SaveStatePath = NULL;     // save state to load at startup
 
 #if defined(SHAREDIR)
-  static const char *l_DataDirPath = SHAREDIR;
+static const char *l_DataDirPath = SHAREDIR;
 #else
-  static const char *l_DataDirPath = NULL;
+static const char *l_DataDirPath = NULL;
 #endif
 
 static int  *l_TestShotList = NULL;      // list of screenshots to take for regression test support
@@ -77,15 +77,15 @@ static char      *l_CheatNumList = NULL;
 
 void DebugMessage(int level, const char *message, ...)
 {
-  char msgbuf[1024];
-  va_list args;
+    char msgbuf[1024];
+    va_list args;
 
-  va_start(args, message);
-  vsnprintf(msgbuf, 1024, message, args);
+    va_start(args, message);
+    vsnprintf(msgbuf, 1024, message, args);
 
-  DebugCallback("UI-Console", level, msgbuf);
+    DebugCallback("UI-Console", level, msgbuf);
 
-  va_end(args);
+    va_end(args);
 }
 
 void DebugCallback(void *Context, int level, const char *message)
@@ -108,20 +108,20 @@ void DebugCallback(void *Context, int level, const char *message)
         __android_log_print(ANDROID_LOG_ERROR, (const char *) Context, "Unknown: %s", message);
 #else
     if (level == M64MSG_ERROR)
-        printf("%s Error: %s\n", (const char *) Context, message);
+        printf("%s Error: %s\n", (const char *)Context, message);
     else if (level == M64MSG_WARNING)
-        printf("%s Warning: %s\n", (const char *) Context, message);
+        printf("%s Warning: %s\n", (const char *)Context, message);
     else if (level == M64MSG_INFO)
-        printf("%s: %s\n", (const char *) Context, message);
+        printf("%s: %s\n", (const char *)Context, message);
     else if (level == M64MSG_STATUS)
-        printf("%s Status: %s\n", (const char *) Context, message);
+        printf("%s Status: %s\n", (const char *)Context, message);
     else if (level == M64MSG_VERBOSE)
     {
         if (g_Verbose)
-            printf("%s: %s\n", (const char *) Context, message);
+            printf("%s: %s\n", (const char *)Context, message);
     }
     else
-        printf("%s Unknown: %s\n", (const char *) Context, message);
+        printf("%s Unknown: %s\n", (const char *)Context, message);
 #endif
 }
 
@@ -130,7 +130,7 @@ static void FrameCallback(unsigned int FrameIndex)
     // load savestate at first frame if needed
     if (l_SaveStatePath != NULL && FrameIndex == 0)
     {
-        if ((*CoreDoCommand)(M64CMD_STATE_LOAD, 0, (void *) l_SaveStatePath) != M64ERR_SUCCESS)
+        if ((*CoreDoCommand)(M64CMD_STATE_LOAD, 0, (void *)l_SaveStatePath) != M64ERR_SUCCESS)
         {
             DebugMessage(M64MSG_WARNING, "couldn't load state, rom will run normally.");
         }
@@ -194,9 +194,9 @@ static m64p_error OpenConfigurationHandles(void)
         (*ConfigOpenSection)("UI-Console", &l_ConfigUI);
         bSaveConfig = 1;
     }
-    else if (((int) fConfigParamsVersion) != ((int) CONFIG_PARAM_VERSION))
+    else if (((int)fConfigParamsVersion) != ((int)CONFIG_PARAM_VERSION))
     {
-        DebugMessage(M64MSG_WARNING, "Incompatible version %.2f in 'UI-Console' config section: current is %.2f. Setting defaults.", fConfigParamsVersion, (float) CONFIG_PARAM_VERSION);
+        DebugMessage(M64MSG_WARNING, "Incompatible version %.2f in 'UI-Console' config section: current is %.2f. Setting defaults.", fConfigParamsVersion, (float)CONFIG_PARAM_VERSION);
         (*ConfigDeleteSection)("UI-Console");
         (*ConfigOpenSection)("UI-Console", &l_ConfigUI);
         bSaveConfig = 1;
@@ -211,7 +211,7 @@ static m64p_error OpenConfigurationHandles(void)
     }
 
     /* Set default values for my Config parameters */
-    (*ConfigSetDefaultFloat)(l_ConfigUI, "Version", CONFIG_PARAM_VERSION,  "Mupen64Plus UI-Console config parameter set version number.  Please don't change this version number.");
+    (*ConfigSetDefaultFloat)(l_ConfigUI, "Version", CONFIG_PARAM_VERSION, "Mupen64Plus UI-Console config parameter set version number.  Please don't change this version number.");
     (*ConfigSetDefaultString)(l_ConfigUI, "PluginDir", OSAL_CURRENT_DIR, "Directory in which to search for plugins");
     (*ConfigSetDefaultString)(l_ConfigUI, "VideoPlugin", "mupen64plus-video-rice" OSAL_DLL_EXTENSION, "Filename of video plugin");
     (*ConfigSetDefaultString)(l_ConfigUI, "AudioPlugin", "mupen64plus-audio-sdl" OSAL_DLL_EXTENSION, "Filename of audio plugin");
@@ -252,53 +252,53 @@ static m64p_error SaveConfigurationOptions(void)
 static void printUsage(const char *progname)
 {
     printf("Usage: %s [parameters] [romfile]\n"
-           "\n"
-           "Parameters:\n"
-           "    --noosd                : disable onscreen display\n"
-           "    --osd                  : enable onscreen display\n"
-           "    --fullscreen           : use fullscreen display mode\n"
-           "    --windowed             : use windowed display mode\n"
-           "    --resolution (res)     : display resolution (640x480, 800x600, 1024x768, etc)\n"
-           "    --nospeedlimit         : disable core speed limiter (should be used with dummy audio plugin)\n"
-           "    --cheats (cheat-spec)  : enable or list cheat codes for the given rom file\n"
-           "    --corelib (filepath)   : use core library (filepath) (can be only filename or full path)\n"
-           "    --configdir (dir)      : force configation directory to (dir); should contain mupen64plus.cfg\n"
-           "    --datadir (dir)        : search for shared data files (.ini files, languages, etc) in (dir)\n"
-           "    --plugindir (dir)      : search for plugins in (dir)\n"
-           "    --sshotdir (dir)       : set screenshot directory to (dir)\n"
-           "    --gfx (plugin-spec)    : use gfx plugin given by (plugin-spec)\n"
-           "    --audio (plugin-spec)  : use audio plugin given by (plugin-spec)\n"
-           "    --input (plugin-spec)  : use input plugin given by (plugin-spec)\n"
-           "    --rsp (plugin-spec)    : use rsp plugin given by (plugin-spec)\n"
-           "    --emumode (mode)       : set emu mode to: 0=Pure Interpreter 1=Interpreter 2=DynaRec\n"
-           "    --savestate (filepath) : savestate loaded at startup\n"
-           "    --testshots (list)     : take screenshots at frames given in comma-separated (list), then quit\n"
-           "    --set (param-spec)     : set a configuration variable, format: ParamSection[ParamName]=Value\n"
-           "    --core-compare-send    : use the Core Comparison debugging feature, in data sending mode\n"
-           "    --core-compare-recv    : use the Core Comparison debugging feature, in data receiving mode\n"
-           "    --nosaveoptions        : do not save the given command-line options in configuration file\n"
-		   "    --server               : launch the emulator as network server\n"
-		   "    --client (ip)          : launch the emulator as network client and connect to the ip\n"
-		   "    --port (port number)   : server: open the port number | client: connect to the port number\n"
-           "    --verbose              : print lots of information\n"
-           "    --help                 : see this help message\n\n"
-           "(plugin-spec):\n"
-           "    (pluginname)           : filename (without path) of plugin to find in plugin directory\n"
-           "    (pluginpath)           : full path and filename of plugin\n"
-           "    'dummy'                : use dummy plugin\n\n"
-           "(cheat-spec):\n"
-           "    'list'                 : show all of the available cheat codes\n"
-           "    'all'                  : enable all of the available cheat codes\n"
-           "    (codelist)             : a comma-separated list of cheat code numbers to enable,\n"
-           "                             with dashes to use code variables (ex 1-2 to use cheat 1 option 2)\n"
-           "\n", progname);
+        "\n"
+        "Parameters:\n"
+        "    --noosd                : disable onscreen display\n"
+        "    --osd                  : enable onscreen display\n"
+        "    --fullscreen           : use fullscreen display mode\n"
+        "    --windowed             : use windowed display mode\n"
+        "    --resolution (res)     : display resolution (640x480, 800x600, 1024x768, etc)\n"
+        "    --nospeedlimit         : disable core speed limiter (should be used with dummy audio plugin)\n"
+        "    --cheats (cheat-spec)  : enable or list cheat codes for the given rom file\n"
+        "    --corelib (filepath)   : use core library (filepath) (can be only filename or full path)\n"
+        "    --configdir (dir)      : force configation directory to (dir); should contain mupen64plus.cfg\n"
+        "    --datadir (dir)        : search for shared data files (.ini files, languages, etc) in (dir)\n"
+        "    --plugindir (dir)      : search for plugins in (dir)\n"
+        "    --sshotdir (dir)       : set screenshot directory to (dir)\n"
+        "    --gfx (plugin-spec)    : use gfx plugin given by (plugin-spec)\n"
+        "    --audio (plugin-spec)  : use audio plugin given by (plugin-spec)\n"
+        "    --input (plugin-spec)  : use input plugin given by (plugin-spec)\n"
+        "    --rsp (plugin-spec)    : use rsp plugin given by (plugin-spec)\n"
+        "    --emumode (mode)       : set emu mode to: 0=Pure Interpreter 1=Interpreter 2=DynaRec\n"
+        "    --savestate (filepath) : savestate loaded at startup\n"
+        "    --testshots (list)     : take screenshots at frames given in comma-separated (list), then quit\n"
+        "    --set (param-spec)     : set a configuration variable, format: ParamSection[ParamName]=Value\n"
+        "    --core-compare-send    : use the Core Comparison debugging feature, in data sending mode\n"
+        "    --core-compare-recv    : use the Core Comparison debugging feature, in data receiving mode\n"
+        "    --nosaveoptions        : do not save the given command-line options in configuration file\n"
+        "    --server               : launch the emulator as network server\n"
+        "    --client (ip)          : launch the emulator as network client and connect to the ip\n"
+        "    --port (port number)   : server: open the port number | client: connect to the port number\n"
+        "    --verbose              : print lots of information\n"
+        "    --help                 : see this help message\n\n"
+        "(plugin-spec):\n"
+        "    (pluginname)           : filename (without path) of plugin to find in plugin directory\n"
+        "    (pluginpath)           : full path and filename of plugin\n"
+        "    'dummy'                : use dummy plugin\n\n"
+        "(cheat-spec):\n"
+        "    'list'                 : show all of the available cheat codes\n"
+        "    'all'                  : enable all of the available cheat codes\n"
+        "    (codelist)             : a comma-separated list of cheat code numbers to enable,\n"
+        "                             with dashes to use code variables (ex 1-2 to use cheat 1 option 2)\n"
+        "\n", progname);
 
     return;
 }
 
 static int SetConfigParameter(const char *ParamSpec)
 {
-    char *ParsedString, *VarName, *VarValue=NULL;
+    char *ParsedString, *VarName, *VarValue = NULL;
     m64p_handle ConfigSection;
     m64p_type VarType;
     m64p_error rval;
@@ -310,7 +310,7 @@ static int SetConfigParameter(const char *ParamSpec)
     }
 
     /* make a copy of the input string */
-    ParsedString = (char *) malloc(strlen(ParamSpec) + 1);
+    ParsedString = (char *)malloc(strlen(ParamSpec) + 1);
     if (ParsedString == NULL)
     {
         DebugMessage(M64MSG_ERROR, "SetConfigParameter() couldn't allocate memory for temporary string.");
@@ -347,28 +347,28 @@ static int SetConfigParameter(const char *ParamSpec)
     }
     if ((*ConfigGetParameterType)(ConfigSection, VarName, &VarType) == M64ERR_SUCCESS)
     {
-        switch(VarType)
+        switch (VarType)
         {
             int ValueInt;
             float ValueFloat;
-            case M64TYPE_INT:
-                ValueInt = atoi(VarValue);
-                ConfigSetParameter(ConfigSection, VarName, M64TYPE_INT, &ValueInt);
-                break;
-            case M64TYPE_FLOAT:
-                ValueFloat = (float) atof(VarValue);
-                ConfigSetParameter(ConfigSection, VarName, M64TYPE_FLOAT, &ValueFloat);
-                break;
-            case M64TYPE_BOOL:
-                ValueInt = (int) (osal_insensitive_strcmp(VarValue, "true") == 0);
-                ConfigSetParameter(ConfigSection, VarName, M64TYPE_BOOL, &ValueInt);
-                break;
-            case M64TYPE_STRING:
-                ConfigSetParameter(ConfigSection, VarName, M64TYPE_STRING, VarValue);
-                break;
-            default:
-                DebugMessage(M64MSG_ERROR, "invalid VarType in SetConfigParameter()");
-                return 5;
+        case M64TYPE_INT:
+            ValueInt = atoi(VarValue);
+            ConfigSetParameter(ConfigSection, VarName, M64TYPE_INT, &ValueInt);
+            break;
+        case M64TYPE_FLOAT:
+            ValueFloat = (float)atof(VarValue);
+            ConfigSetParameter(ConfigSection, VarName, M64TYPE_FLOAT, &ValueFloat);
+            break;
+        case M64TYPE_BOOL:
+            ValueInt = (int)(osal_insensitive_strcmp(VarValue, "true") == 0);
+            ConfigSetParameter(ConfigSection, VarName, M64TYPE_BOOL, &ValueInt);
+            break;
+        case M64TYPE_STRING:
+            ConfigSetParameter(ConfigSection, VarName, M64TYPE_STRING, VarValue);
+            break;
+        default:
+            DebugMessage(M64MSG_ERROR, "invalid VarType in SetConfigParameter()");
+            return 5;
         }
     }
     else
@@ -395,7 +395,7 @@ static int *ParseNumberList(const char *InputString, int *ValuesFound)
     }
 
     /* create a list and populate it with the frame counter values at which to take screenshots */
-    if ((OutputList = (int *) malloc(sizeof(int) * (values + 1))) != NULL)
+    if ((OutputList = (int *)malloc(sizeof(int) * (values + 1))) != NULL)
     {
         int idx = 0;
         str = InputString;
@@ -424,17 +424,17 @@ static int ParseCommandLineInitial(int argc, const char **argv)
 
         if (strcmp(argv[i], "--corelib") == 0 && ArgsLeft >= 1)
         {
-            l_CoreLibPath = argv[i+1];
+            l_CoreLibPath = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--configdir") == 0 && ArgsLeft >= 1)
         {
-            l_ConfigDirPath = argv[i+1];
+            l_ConfigDirPath = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--datadir") == 0 && ArgsLeft >= 1)
         {
-            l_DataDirPath = argv[i+1];
+            l_DataDirPath = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
@@ -487,13 +487,13 @@ static m64p_error ParseCommandLineFinal(int argc, const char **argv)
             }
         }
         else if ((strcmp(argv[i], "--corelib") == 0 || strcmp(argv[i], "--configdir") == 0 ||
-                  strcmp(argv[i], "--datadir") == 0) && ArgsLeft >= 1)
+            strcmp(argv[i], "--datadir") == 0) && ArgsLeft >= 1)
         {   /* these are handled in ParseCommandLineInitial */
             i++;
         }
         else if (strcmp(argv[i], "--resolution") == 0 && ArgsLeft >= 1)
         {
-            const char *res = argv[i+1];
+            const char *res = argv[i + 1];
             int xres, yres;
             i++;
             if (sscanf(res, "%ix%i", &xres, &yres) != 2)
@@ -504,72 +504,72 @@ static m64p_error ParseCommandLineFinal(int argc, const char **argv)
                 (*ConfigSetParameter)(l_ConfigVideo, "ScreenHeight", M64TYPE_INT, &yres);
             }
         }
-		else if (strcmp(argv[i], "--server") == 0)
-		{
-			int isServer = IS_SERVER;
-			(*ConfigSetParameter)(l_ConfigCore, "NetworkMode", M64TYPE_INT, &isServer);
-		}
-		else if (strcmp(argv[i], "--client") == 0 && ArgsLeft >= 1)
-		{
-			const char *ip = argv[i + 1];
-			int isClient = IS_CLIENT;
-			i++;
-			(*ConfigSetParameter)(l_ConfigCore, "NetworkMode", M64TYPE_INT, &isClient);
-			(*ConfigSetParameter)(l_ConfigCore, "ServerIp", M64TYPE_STRING, ip);
-		}
-		else if (strcmp(argv[i], "--port") == 0 && ArgsLeft >= 1)
-		{
-			const char *port = argv[i + 1];
-			//port is a string because getaddrinfo need a char* 
-			(*ConfigSetParameter)(l_ConfigCore, "ServerPort", M64TYPE_INT, port);
-			i++;
-		}
+        else if (strcmp(argv[i], "--server") == 0)
+        {
+            int isServer = IS_SERVER;
+            (*ConfigSetParameter)(l_ConfigCore, "NetworkMode", M64TYPE_INT, &isServer);
+        }
+        else if (strcmp(argv[i], "--client") == 0 && ArgsLeft >= 1)
+        {
+            const char *ip = argv[i + 1];
+            int isClient = IS_CLIENT;
+            i++;
+            (*ConfigSetParameter)(l_ConfigCore, "NetworkMode", M64TYPE_INT, &isClient);
+            (*ConfigSetParameter)(l_ConfigCore, "ServerIp", M64TYPE_STRING, ip);
+        }
+        else if (strcmp(argv[i], "--port") == 0 && ArgsLeft >= 1)
+        {
+            const char *port = argv[i + 1];
+            //port is a string because getaddrinfo need a char* 
+            (*ConfigSetParameter)(l_ConfigCore, "ServerPort", M64TYPE_INT, port);
+            i++;
+        }
         else if (strcmp(argv[i], "--cheats") == 0 && ArgsLeft >= 1)
         {
-            if (strcmp(argv[i+1], "all") == 0)
+            if (strcmp(argv[i + 1], "all") == 0)
                 l_CheatMode = CHEAT_ALL;
-            else if (strcmp(argv[i+1], "list") == 0)
+            else if (strcmp(argv[i + 1], "list") == 0)
                 l_CheatMode = CHEAT_SHOW_LIST;
             else
             {
                 l_CheatMode = CHEAT_LIST;
-                l_CheatNumList = (char*) argv[i+1];
+                l_CheatNumList = (char*)argv[i + 1];
             }
             i++;
         }
         else if (strcmp(argv[i], "--plugindir") == 0 && ArgsLeft >= 1)
         {
-            g_PluginDir = argv[i+1];
+            g_PluginDir = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--sshotdir") == 0 && ArgsLeft >= 1)
         {
-            (*ConfigSetParameter)(l_ConfigCore, "ScreenshotPath", M64TYPE_STRING, argv[i+1]);
+            (*ConfigSetParameter)(l_ConfigCore, "ScreenshotPath", M64TYPE_STRING, argv[i + 1]);
             i++;
         }
         else if (strcmp(argv[i], "--gfx") == 0 && ArgsLeft >= 1)
         {
-            g_GfxPlugin = argv[i+1];
+            g_GfxPlugin = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--audio") == 0 && ArgsLeft >= 1)
         {
-            g_AudioPlugin = argv[i+1];
+            g_AudioPlugin = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--input") == 0 && ArgsLeft >= 1)
         {
-            g_InputPlugin = argv[i+1];
+            g_InputPlugin = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--rsp") == 0 && ArgsLeft >= 1)
         {
-            g_RspPlugin = argv[i+1];
+            g_RspPlugin = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--emumode") == 0 && ArgsLeft >= 1)
         {
-            int emumode = atoi(argv[i+1]);
+            int emumode = atoi(argv[i + 1]);
             i++;
             if (emumode < 0 || emumode > 2)
             {
@@ -585,17 +585,17 @@ static m64p_error ParseCommandLineFinal(int argc, const char **argv)
         }
         else if (strcmp(argv[i], "--savestate") == 0 && ArgsLeft >= 1)
         {
-            l_SaveStatePath = argv[i+1];
+            l_SaveStatePath = argv[i + 1];
             i++;
         }
         else if (strcmp(argv[i], "--testshots") == 0 && ArgsLeft >= 1)
         {
-            l_TestShotList = ParseNumberList(argv[i+1], NULL);
+            l_TestShotList = ParseNumberList(argv[i + 1], NULL);
             i++;
         }
         else if (strcmp(argv[i], "--set") == 0 && ArgsLeft >= 1)
         {
-            if (SetConfigParameter(argv[i+1]) != 0)
+            if (SetConfigParameter(argv[i + 1]) != 0)
                 return M64ERR_INPUT_INVALID;
             i++;
         }
@@ -658,7 +658,7 @@ int main(int argc, char *argv[])
 {
     int i;
 
-    printf(" __  __                         __   _  _   ____  _             \n");  
+    printf(" __  __                         __   _  _   ____  _             \n");
     printf("|  \\/  |_   _ _ __   ___ _ __  / /_ | || | |  _ \\| |_   _ ___ \n");
     printf("| |\\/| | | | | '_ \\ / _ \\ '_ \\| '_ \\| || |_| |_) | | | | / __|  \n");
     printf("| |  | | |_| | |_) |  __/ | | | (_) |__   _|  __/| | |_| \\__ \\  \n");
@@ -667,7 +667,7 @@ int main(int argc, char *argv[])
     printf("%s Version %i.%i.%i\n\n", CONSOLE_UI_NAME, VERSION_PRINTF_SPLIT(CONSOLE_UI_VERSION));
 
     /* bootstrap some special parameters from the command line */
-    if (ParseCommandLineInitial(argc, (const char **) argv) != 0)
+    if (ParseCommandLineInitial(argc, (const char **)argv) != 0)
         return 1;
 
     /* load the Mupen64Plus core library */
@@ -693,7 +693,7 @@ int main(int argc, char *argv[])
     }
 
     /* parse command-line options */
-    rval = ParseCommandLineFinal(argc, (const char **) argv);
+    rval = ParseCommandLineFinal(argc, (const char **)argv);
     if (rval != M64ERR_SUCCESS)
     {
         (*CoreShutdown)();
@@ -729,7 +729,7 @@ int main(int argc, char *argv[])
     fseek(fPtr, 0L, SEEK_END);
     romlength = ftell(fPtr);
     fseek(fPtr, 0L, SEEK_SET);
-    unsigned char *ROM_buffer = (unsigned char *) malloc(romlength);
+    unsigned char *ROM_buffer = (unsigned char *)malloc(romlength);
     if (ROM_buffer == NULL)
     {
         DebugMessage(M64MSG_ERROR, "couldn't allocate %li-byte buffer for ROM image file '%s'.", romlength, l_ROMFilepath);
@@ -750,7 +750,7 @@ int main(int argc, char *argv[])
     fclose(fPtr);
 
     /* Try to load the ROM image into the core */
-    if ((*CoreDoCommand)(M64CMD_ROM_OPEN, (int) romlength, ROM_buffer) != M64ERR_SUCCESS)
+    if ((*CoreDoCommand)(M64CMD_ROM_OPEN, (int)romlength, ROM_buffer) != M64ERR_SUCCESS)
     {
         DebugMessage(M64MSG_ERROR, "core failed to open ROM image file '%s'.", l_ROMFilepath);
         free(ROM_buffer);

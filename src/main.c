@@ -280,6 +280,7 @@ static void printUsage(const char *progname)
         "    --server               : launch the emulator as network server\n"
         "    --client (ip)          : launch the emulator as network client and connect to the ip\n"
         "    --port (port number)   : server: open the port number | client: connect to the port number\n"
+        "    --local-player (number): use to set how many players are in local when network playing \n"
         "    --verbose              : print lots of information\n"
         "    --help                 : see this help message\n\n"
         "(plugin-spec):\n"
@@ -522,6 +523,13 @@ static m64p_error ParseCommandLineFinal(int argc, const char **argv)
             const char *port = argv[i + 1];
             //port is a string because getaddrinfo need a char* 
             (*ConfigSetParameter)(l_ConfigCore, "ServerPort", M64TYPE_INT, port);
+            i++;
+        }
+        else if (strcmp(argv[i], "--local-player") == 0 && ArgsLeft >= 1)
+        {
+            const char *local_player_number = argv[i + 1];
+            //port is a string because getaddrinfo need a char* 
+            (*ConfigSetParameter)(l_ConfigCore, "LocalPlayer", M64TYPE_INT, local_player_number);
             i++;
         }
         else if (strcmp(argv[i], "--cheats") == 0 && ArgsLeft >= 1)
